@@ -4,6 +4,121 @@
 #include <time.h>
 #include <cstring>
 using namespace std;
+class Exception{
+	protected:
+		string e_type;	
+	public:
+		Exception(string error_type = "unknown_error"){
+			e_type = error_type;
+		}
+		string get_error_type(){
+			return e_type;
+		}
+};
+class DivisionError:public Exception{
+	private:
+		int mat_rows,mat_cols;
+	public:
+		DivisionError(int rows, int cols, string error_type="wrong_dvision_matrix_size"){
+			e_type = error_type;
+			mat_rows = rows;
+			mat_cols = cols;
+		}
+		int get_rows(){
+			return mat_rows;
+		}
+		int get_cols(){
+			return mat_cols;
+		}
+};
+class DivisionByZero:public Exception{
+	public:
+		DivisionByZero(string error_type="division_by_zero"){
+			e_type = error_type;
+		}
+};
+class SizeError:public Exception{
+	private:
+		int rows1,rows2,cols1,cols2;
+	public:
+		SizeError(int rows1,int cols1,int rows2,int cols2,string error_type="size_error"){
+			e_type = error_type;
+			this->cols1 = cols1;
+			this->cols2 = cols2;
+			this->rows1 = rows1;
+			this->rows2 = rows2;
+		}
+		string get_size_info(){
+			string s = "";
+			s += "First matrix is " + to_string(rows1)+"x" + to_string(cols1) + "\n";
+			s+= "Second matrix is " + to_string(rows2)+"x" + to_string(cols2) + "\n";
+			return s;
+		}
+		
+};
+class MultiplicationSizeError:public Exception{
+	private:
+		int rows2,cols1;
+	public:
+		MultiplicationSizeError(int cols1,int rows2, string error_type="multiplication_size_error"){
+			e_type = error_type;
+			this->cols1 = cols1;
+			this->rows2 = rows2;
+		}
+		string get_size_info(){
+			string s = "";
+			s += "First matrix has " +to_string(cols1) +" columns\n";
+			s +="Second matrix has " + to_string(rows2) +" rows\n";
+			return s;
+		}
+};
+class IndexError:public Exception{
+	private:
+		int row,col,mrows,mcols;
+	public:
+		IndexError(int row, int col,int mrows,int mcols,string error_type="index_error"){
+			e_type = error_type;
+			this->row = row;
+			this->col =col;
+			this->mrows = mrows;
+			this->mcols = mcols;
+		}
+		string get_out_of_bounce_info(){
+			string s = "";
+			if(row > mrows || row <0){
+				s+= "Your row index must be in range(0,"+to_string(mrows-1)+"). ";
+				s+="Your current row index: " + to_string(row)+"\n";
+			}
+			if(col > mcols || col <0){
+				s+= "Your column index must be in range(0,"+to_string(col-1)+"). ";
+				s+="Your current column index: " + to_string(col)+"\n";
+			}
+			return s;
+		}
+		int get_col(){
+			return col;
+		}
+		int get_row(){
+			return row;
+		}
+};
+class StringConvertError:public Exception{
+	private:	
+		string reason;
+		int index_error;
+	public:
+		StringConvertError (int index_error,string reason = "uknown error", string error_type="string_convert_error"){
+			this->reason = reason;
+			this->index_error = index_error;
+			e_type = error_type;
+		}
+		int get_index_error(){
+			return index_error; 
+		}
+		string get_reason(){
+			return reason;
+		}
+};
 
 class Matrix{
     private:
@@ -57,25 +172,28 @@ class Matrix{
             info = copy.info;
         }
       	Matrix (string s){
-			if(s[0] == '[' || s[s.size()-2] != ';'){
+      		try{
+      			if(s[0] != '[')
+      				throw StringConvertError(0,"Wrong string set up");
+      			if(s[s.size()-2] != ';')
+				  	throw StringConvertError(s.size()-2,"Wrong string set up"); 
+				if(s[s.size()-1] != ']')
+					throw StringConvertError(s.size()-1,"Wrong string set up"); 
         		int *current_cols = new int[s.size()],current_rows = 0;
         		for(int i =0; i < s.size();i++){
-       				current_cols[i]=1;
+       					current_cols[i]=1;
 				}
         		for(int i = 1; i < s.size()-1;i++){
+        			if(!isdigit(s[i]) && s[i] != ','&& s[i] != ';'&& s[i] != '-')
+        				throw StringConvertError(i,"Unexpected symbol");
        				if(s[i] == ',')
        					current_cols[current_rows]++;
        				else if(s[i] == ';')
        					current_rows++;
 				}
 				for(int i =1; i < current_rows;i++){
-					if(current_cols[0] != current_cols[i]){
-						this->matrix  = NULL;
-           		 		this->rows = 0;
-            	   		this->cols = 0;
-            			MakeString();
-            			return;
-					}
+					if(current_cols[0] != current_cols[i])
+						throw StringConvertError(-1,"Not the same amount of elements in the columns");
 				}
 				this->rows = current_rows;
 				this->cols = current_cols[0];
@@ -86,7 +204,6 @@ class Matrix{
 					minus = 1;
 					col = 0;
 					num = 0;
-				
 					while(s[string_index] != ';'){
 						if(s[string_index] == '-')
 							minus = -1;
@@ -108,7 +225,12 @@ class Matrix{
 					string_index++;
 				}
 				MakeString();
-			}else{
+			}
+			catch(StringConvertError &e){
+				cout << e.get_error_type() << endl;
+				cout << e.get_reason() << endl;
+				if(e.get_index_error() != -1)
+					cout << "Index error: " << e.get_index_error() << endl;
 				this->matrix  = NULL;
             	this->rows = 0;
            		this->cols = 0;
@@ -139,8 +261,8 @@ class Matrix{
                     delete matrix[i];
                 }
                 delete matrix;
-                matrix = move.matrix;
-            	move.matrix = NULL;
+                matrix = NULL;
+            	swap(move.matrix,matrix);
                 rows = move.rows;
                 cols = move.cols;
                 info = move.info;}
@@ -176,6 +298,19 @@ class Matrix{
         int get_cols(){
             return cols;
         }
+        int get_elment_by_index(int row, int col){
+        	try{
+        		if(row > rows || row < 0 || col > cols || col <0){
+        			throw IndexError(row,col,rows,cols);
+				}
+			}
+        	catch(IndexError &e){
+        		cout << e.get_error_type() << endl;
+        		cout << e.get_out_of_bounce_info();
+        		return 0;
+			}
+			return matrix[row][col];
+		}
         int **get_matrix(){
             int **temp = new int *[rows];
             for(int i = 0; i < rows;i++){
@@ -187,7 +322,7 @@ class Matrix{
         void set_new_matrix(int **matrix, int rows, int cols){
             if(cols > 0 && rows > 0 && matrix != NULL){
                 for(int i = 0; i < rows;i++){
-                	delete this->matrix[i];
+                delete this->matrix[i];
                 }
                 delete this->matrix;
                 this->matrix = matrix;
@@ -209,40 +344,84 @@ class Matrix{
         }
         
         Matrix operator +(const Matrix& m){
-            if(this->cols != m.cols  || this->rows != m.rows)
-                return Matrix();
-            int **temp = CreateMatrix(this->rows,this->cols);
-            for(int i = 0; i < rows;i++){
-                for(int j =0; j < cols;j++){
-                    temp[i][j] = m.matrix[i][j] +this->matrix[i][j];
-                }
-            }
-            return Matrix(temp,this->rows,this->cols);
+        	try{
+        		if(this->cols != m.cols  || this->rows != m.rows)
+            		throw SizeError(this->rows,this->cols,m.rows,m.cols);
+            	int **temp = CreateMatrix(this->rows,this->cols);
+            	for(int i = 0; i < rows;i++){
+             	   for(int j =0; j < cols;j++){
+              	      temp[i][j] = m.matrix[i][j] +this->matrix[i][j];
+                	}
+            	}
+            	return Matrix(temp,this->rows,this->cols);
+			}
+			catch(SizeError &e){
+				cout << e.get_error_type() << endl;
+				cout << e.get_size_info();
+				return Matrix();
+			}
+            
         }
         Matrix operator-(const Matrix& m){
-            if(this->cols != m.cols  || this->rows != m.rows)
-                return Matrix();
-            int **temp = CreateMatrix(this->rows,this->cols);
-            for(int i = 0; i < rows;i++){
-                for(int j =0; j < cols;j++){
-                    temp[i][j] = this->matrix[i][j]-m.matrix[i][j];
-                }
+        	try{
+            	if(this->cols != m.cols  || this->rows != m.rows)
+            		throw SizeError(this->rows,this->cols,m.rows,m.cols);
+            	int **temp = CreateMatrix(this->rows,this->cols);
+            	for(int i = 0; i < rows;i++){
+                	for(int j =0; j < cols;j++){
+                    	temp[i][j] = this->matrix[i][j]-m.matrix[i][j];
+                	}
+            	}
+            	return Matrix(temp,this->rows,this->cols);
             }
-            return Matrix(temp,this->rows,this->cols);
+			catch(SizeError &e){
+				cout << e.get_error_type() << endl;
+				cout << e.get_size_info();
+				return Matrix();
+			}
+            
         }
         Matrix operator *(const Matrix& m){
-            if(this->cols != m.rows )
-                return Matrix();
-            int **temp = CreateMatrix(this->rows,this->cols);
-            for(int i = 0; i < this->rows;i++){
-                for(int j = 0; j < this->cols;j++){
-                    for(int col = 0; col < this->cols;col++){
-                        temp[i][j] += this->matrix[i][col]*m.matrix[col][j];
-                    }
-                }
-            }
-            return Matrix(temp,this->rows,this->cols);
+        	try{
+            	if(this->cols != m.rows )
+            	    throw MultiplicationSizeError(this->cols,m.rows);
+            	int **temp = CreateMatrix(this->rows,this->cols);
+            	for(int i = 0; i < this->rows;i++){
+            	    for(int j = 0; j < this->cols;j++){
+            	        for(int col = 0; col < this->cols;col++){
+             	           temp[i][j] += this->matrix[i][col]*m.matrix[col][j];
+             	       }
+             	   }
+            	}
+            	return Matrix(temp,this->rows,this->cols);
+			}
+            catch(MultiplicationSizeError &e){
+            	cout << e.get_error_type() << endl;
+				cout << e.get_size_info();
+            	return Matrix();
+			}
         }
+        Matrix operator /(const Matrix& m){
+        	try{
+        		if(m.cols != 1 || m.rows != 1){
+        			throw DivisionError(m.cols,m.rows);
+				}
+				if(m.matrix[0][0] == 0){
+					throw DivisionByZero();
+				}
+				return Matrix(*this*(1/m.matrix[0][0]));
+			}
+        	catch(DivisionByZero &e){
+        		cout << e.get_error_type() << endl;
+        		return Matrix();
+			}
+			catch(DivisionError &e){
+        		cout << e.get_error_type()<< endl;
+        		cout << "Matrix size: " << e.get_rows() << "x" << e.get_cols() << endl;
+        		return Matrix();
+			}
+		}
+
         bool operator == (const Matrix& m){
             return this->matrix_sum() == m.matrix_sum();
         }
@@ -256,10 +435,10 @@ class Matrix{
             return !(this->matrix_sum() == m.matrix_sum());
         }
         bool operator >= (const Matrix& m){
-            return this->matrix_sum()>=m.matrix_sum();
+            return this->matrix_sum() == m.matrix_sum() || this->matrix_sum() > m.matrix_sum();
         }
         bool operator <= (const Matrix& m){
-            return this->matrix_sum() <= m.matrix_sum();
+            return this->matrix_sum() == m.matrix_sum() || this->matrix_sum() < m.matrix_sum();
         }
         Matrix & operator += (const Matrix &move){
             *this =(*this+move);
@@ -285,6 +464,10 @@ class Matrix{
             *this = (*this*Matrix(move));
             return *this;
         }
+        Matrix & operator /= (int move){
+            *this = (*this/Matrix(move));
+            return *this;
+        }
         Matrix operator +(string s){
             return *this + Matrix(s);
         }
@@ -294,7 +477,10 @@ class Matrix{
         Matrix operator *(string s){
              return *this * Matrix(s);
         }
-         Matrix operator +(int num){
+        Matrix operator /(string s){
+             return *this / Matrix(s);
+        }
+        Matrix operator +(int num){
             return *this + Matrix(num);
         }
         Matrix operator-(int num){
@@ -303,6 +489,9 @@ class Matrix{
         Matrix operator *(int num){
              return *this * Matrix(num);
         }
+        Matrix operator /(int num){
+    		return *this / Matrix(num);
+		}
         void PrintInfo(){
             for(int i = 0; i < rows;i++){
                 for(int  j = 0; j < cols;j++){
@@ -322,6 +511,23 @@ int ** RandomFill(int ** matrix,int rows,int cols,int from =0, int  to = 100){
 int main(){
     srand(time(0));
     Matrix temp_mat(5);
+    (temp_mat/"[1,2;]");
+    (temp_mat/0);
+    system("pause");
+	system("cls");
+	temp_mat.get_elment_by_index(-1,1);
+	system("pause");
+	system("cls");
+	(Matrix("[1,2;1,2;]")+Matrix("[1,2;1,2;1,2;]"));
+	system("pause");
+	system("cls");
+	(Matrix("[1,2;1,2;]")*Matrix("[1,2;1,2;1,2;]"));
+	system("pause");
+	system("cls");
+	Matrix string_mat_e("[1,2,3 ;1,2,3;1,2,3;]");
+    string_mat_e.PrintInfo();
+	system("pause");
+	system("cls");
     temp_mat.set_new_matrix("[1,2,3;1,2,3;1,2,3;]");
     temp_mat.PrintInfo();
 	system("pause");
