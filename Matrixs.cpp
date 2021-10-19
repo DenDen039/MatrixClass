@@ -11,6 +11,20 @@ class Exception{
 		Exception(string error_type = "unknown_error"){
 			e_type = error_type;
 		}
+		Exception(const Exception &e){
+			e_type =e.e_type;
+		}
+		Exception& operator = (const Exception &e){
+			e_type =e.e_type;
+			return *this;
+		}
+		Exception(Exception &&e){
+			e_type =e.e_type;
+		}
+		Exception& operator = (Exception &&e){
+			e_type =e.e_type;
+			return *this;
+		}
 		string get_error_type(){
 			return e_type;
 		}
@@ -24,6 +38,17 @@ class DivisionError:public Exception{
 			mat_rows = rows;
 			mat_cols = cols;
 		}
+		DivisionError(const DivisionError &e){
+			e_type =e.e_type;
+			mat_rows =e.mat_rows;
+			mat_cols =e.mat_cols;
+		}
+		DivisionError& operator = (const DivisionError &e){
+			e_type =e.e_type;
+			mat_rows =e.mat_rows;
+			mat_cols =e.mat_cols;
+			return *this;
+		}
 		int get_rows(){
 			return mat_rows;
 		}
@@ -36,6 +61,13 @@ class DivisionByZero:public Exception{
 		DivisionByZero(string error_type="division_by_zero"){
 			e_type = error_type;
 		}
+		DivisionByZero(const DivisionByZero &e){
+			e_type =e.e_type;
+		}
+		DivisionByZero & operator = (const DivisionByZero &e){
+			e_type =e.e_type;
+			return *this;
+		}
 };
 class SizeError:public Exception{
 	private:
@@ -47,6 +79,21 @@ class SizeError:public Exception{
 			this->cols2 = cols2;
 			this->rows1 = rows1;
 			this->rows2 = rows2;
+		}
+		SizeError(const SizeError &e){
+			e_type =e.e_type;
+			rows1 =e.rows1;
+			rows2 =e.rows2;
+			cols1 =e.cols1;
+			cols2 =e.cols2;
+		}
+		SizeError& operator = (const SizeError &e){
+			e_type =e.e_type;
+			rows1 =e.rows1;
+			rows2 =e.rows2;
+			cols1 =e.cols1;
+			cols2 =e.cols2;
+			return *this;
 		}
 		string get_size_info(){
 			string s = "";
@@ -65,6 +112,17 @@ class MultiplicationSizeError:public Exception{
 			this->cols1 = cols1;
 			this->rows2 = rows2;
 		}
+		MultiplicationSizeError(const MultiplicationSizeError &e){
+			e_type =e.e_type;
+			rows2 =e.rows2;
+			cols1 =e.cols1;
+		}
+		MultiplicationSizeError& operator = (const MultiplicationSizeError &e){
+			e_type = e.e_type;
+			rows2 =e.rows2;
+			cols1 =e.cols1;
+			return *this;
+		}
 		string get_size_info(){
 			string s = "";
 			s += "First matrix has " +to_string(cols1) +" columns\n";
@@ -82,6 +140,21 @@ class IndexError:public Exception{
 			this->col =col;
 			this->mrows = mrows;
 			this->mcols = mcols;
+		}
+		IndexError(const IndexError &e){
+			e_type =e.e_type;
+			row = e.row;
+			col = e.col;
+			mrows = e.mrows;
+			mcols = e.mcols;
+		}
+		IndexError& operator = (const IndexError &e){
+			e_type =e.e_type;
+			row = e.row;
+			col = e.col;
+			mrows = e.mrows;
+			mcols = e.mcols;
+			return *this;
 		}
 		string get_out_of_bounce_info(){
 			string s = "";
@@ -112,6 +185,15 @@ class StringConvertError:public Exception{
 			this->index_error = index_error;
 			e_type = error_type;
 		}
+		StringConvertError(const StringConvertError &e){
+			e_type =e.e_type;
+			reason = e.reason;
+		}
+		StringConvertError& operator = (const StringConvertError &e){
+			e_type =e.e_type;
+			reason =e.reason;
+			return *this;
+		}
 		int get_index_error(){
 			return index_error; 
 		}
@@ -139,11 +221,23 @@ class Matrix{
         }
     public:
         explicit Matrix(int **matrix = NULL, int rows = 0, int cols = 0){
+        	try{
+        		if(rows < 0)
+        			throw Exception("Variable out of range");
+        		this->rows = rows;
+			}catch(Exception &e){
+				cout << e.get_error_type() << endl;
+        		this->rows = 0;
+			}
+			try{
+        		if(cols < 0)
+        			throw Exception("Variable out of range");
+        		this->cols = cols;
+			}catch(Exception &e){
+				cout << e.get_error_type() << endl;
+        		this->cols = 0;
+			}
             this->matrix  = matrix;
-            if(rows >= 0)
-                this->rows = rows;
-            if(cols >= cols)
-                this->cols = cols;
             MakeString();
         } 
         Matrix(int num){
@@ -269,13 +363,15 @@ class Matrix{
             return *this;
         }
         ~ Matrix(){
+        	if(rows < 0)
+        		throw 1;
         	if(matrix != NULL){
         		for(int i = 0; i < rows;i++){
                 	delete matrix[i];
             	}
             	delete matrix;
 			}
-            
+    		
         }
         
         static int ** CreateMatrix(int rows, int cols ){
@@ -403,6 +499,8 @@ class Matrix{
         }
         Matrix operator /(const Matrix& m){
         	try{
+        		if(this->matrix == NULL)
+        			throw 1;
         		if(m.cols != 1 || m.rows != 1){
         			throw DivisionError(m.cols,m.rows);
 				}
@@ -450,6 +548,10 @@ class Matrix{
         }
         Matrix & operator *= (const Matrix &move){
             *this = (*this*move);
+            return *this;
+        }
+        Matrix & operator /= (const Matrix &move){
+            *this = (*this/move);
             return *this;
         }
         Matrix & operator += (int move){
@@ -510,6 +612,14 @@ int ** RandomFill(int ** matrix,int rows,int cols,int from =0, int  to = 100){
 }
 int main(){
     srand(time(0));
+    set_terminate([](){ std::cout << "Unhandled exception" << endl; abort();});
+//    Matrix emat;
+//	emat /= temp_mat;
+    DivisionError e1(1,2,"OldInfo"),e2(2,3,"NewInfo");
+    e1 = e2;
+    cout <<  e1.get_error_type();
+    system("pause");
+	system("cls");
     Matrix temp_mat(5);
     (temp_mat/"[1,2;]");
     (temp_mat/0);
