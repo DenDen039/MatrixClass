@@ -187,9 +187,9 @@ class Matrix{
         void set_new_matrix(int **matrix, int rows, int cols){
             if(cols > 0 && rows > 0 && matrix != NULL){
                 for(int i = 0; i < rows;i++){
-                delete matrix[i];
+                	delete this->matrix[i];
                 }
-                delete matrix;
+                delete this->matrix;
                 this->matrix = matrix;
                 this->rows = rows;
                 this->cols = cols;
@@ -256,10 +256,10 @@ class Matrix{
             return !(this->matrix_sum() == m.matrix_sum());
         }
         bool operator >= (const Matrix& m){
-            return this->matrix_sum() == m.matrix_sum() || this->matrix_sum() > m.matrix_sum();
+            return this->matrix_sum()>=m.matrix_sum();
         }
         bool operator <= (const Matrix& m){
-            return this->matrix_sum() == m.matrix_sum() || this->matrix_sum() < m.matrix_sum();
+            return this->matrix_sum() <= m.matrix_sum();
         }
         Matrix & operator += (const Matrix &move){
             *this =(*this+move);
