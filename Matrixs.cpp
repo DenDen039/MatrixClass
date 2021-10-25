@@ -594,14 +594,17 @@ class Matrix{
         Matrix operator /(int num){
     		return *this / Matrix(num);
 		}
-        void PrintInfo(){
-            for(int i = 0; i < rows;i++){
-                for(int  j = 0; j < cols;j++){
-                    cout << matrix[i][j] << " ";
-                }
-            cout << endl;}
-        }
+        friend ostream& operator<<(ostream& os,const Matrix &A);
 };
+ostream& operator<<(ostream& os,const Matrix &A){
+    for(int i = 0; i < A.rows;i++){
+        for(int  j = 0; j < A.cols;j++){
+        	os << A.matrix[i][j] << " ";
+        }
+        os << endl;
+	}
+	return os;
+}
 int ** RandomFill(int ** matrix,int rows,int cols,int from =0, int  to = 100){
     for(int i = 0; i < rows;i++){
         for(int j = 0; j < cols;j++){
@@ -612,9 +615,10 @@ int ** RandomFill(int ** matrix,int rows,int cols,int from =0, int  to = 100){
 }
 int main(){
     srand(time(0));
-    set_terminate([](){ std::cout << "Unhandled exception" << endl; abort();});
-//    Matrix emat;
-//	emat /= temp_mat;
+    set_terminate([](){cout << "Unhandled exception" << endl;abort();});
+    //Matrix emat,temp_mat1;
+	//emat /= temp_mat1;
+	//int b = 5/0;
     DivisionError e1(1,2,"OldInfo"),e2(2,3,"NewInfo");
     e1 = e2;
     cout <<  e1.get_error_type();
@@ -635,21 +639,21 @@ int main(){
 	system("pause");
 	system("cls");
 	Matrix string_mat_e("[1,2,3 ;1,2,3;1,2,3;]");
-    string_mat_e.PrintInfo();
+    cout << string_mat_e;
 	system("pause");
 	system("cls");
     temp_mat.set_new_matrix("[1,2,3;1,2,3;1,2,3;]");
-    temp_mat.PrintInfo();
+    cout << temp_mat;
 	system("pause");
 	system("cls");
     cout << "Convert [1,2,3;1,2,3;1,2,3;] to matrix object:\n";
     Matrix string_mat("[1,2,3;1,2,3;1,2,3;]");
-    string_mat.PrintInfo();
+    cout << string_mat;
 	system("pause");
 	system("cls");
 	cout << "Convert integer 5 to matrix object:\n";
     Matrix num_mat(5);
-    num_mat.PrintInfo();
+    cout << num_mat;
 	system("pause");
 	system("cls");
     Matrix mat1(RandomFill(Matrix::CreateMatrix(2,2),2,2),2,2),mat3(mat1);//copy test
@@ -676,7 +680,7 @@ int main(){
    cout << "To dest matrix" << endl;
    dest = temp;
    cout << "Dest matrix: \n";
-   dest.PrintInfo();
+   cout << dest;
    system("pause");
    system("cls");
    //End of the test
@@ -684,18 +688,18 @@ int main(){
    //Test of arithmetic
    cout <<"Test of arithmetic: \n";
    cout << "Matrix mat1: \n";
-   mat1.PrintInfo();cout << endl;
+   cout << mat1 << endl;
    cout << "Matrix mat3: \n";
-   mat3.PrintInfo();cout << endl;
-   cout << "mat1+mat3+mat3: \n";(mat1+mat3+mat3).PrintInfo(); cout << endl;
-   cout << "mat1-mat3-mat3: \n";(mat1-mat3-mat3).PrintInfo(); cout << endl;
-   cout << "mat1*mat3: \n";(mat1*mat3).PrintInfo(); cout << endl;
+   cout << mat3 << endl;
+   cout << "mat1+mat3+mat3: \n"<<(mat1+mat3+mat3)<< endl;
+   cout << "mat1-mat3-mat3: \n"<<(mat1-mat3-mat3)<< endl;
+   cout << "mat1*mat3: \n"<<(mat1*mat3)<< endl;
    cout << "mat1+=mat3 \n";mat1+=mat3;
-   mat1.PrintInfo(); cout << endl;
+   cout <<mat1<< endl;
    cout << "mat1-=mat3 \n";mat1-=mat3;
-   mat1.PrintInfo(); cout << endl;
+   cout <<mat1<< endl;
    cout << "mat1*=mat3 \n";mat1*=mat3;
-   mat1.PrintInfo(); cout << endl;
+   cout <<mat1<< endl;
    system("pause");
    system("cls");
    //End of the test
@@ -713,15 +717,15 @@ int main(){
    system("cls");
    cout << "Test of arithmetic with integers: \n";
    cout << "num_mat = 5" << endl;
-   cout << "num_mat+5 = ";(num_mat+5).PrintInfo(); 
-   cout << "num_mat-5 = ";(num_mat-5).PrintInfo();
-   cout << "num_mat*5 = ";(num_mat*5).PrintInfo(); 
+   cout << "num_mat+5 = "<<(num_mat+5); 
+   cout << "num_mat-5 = "<<(num_mat-5);
+   cout << "num_mat*5 = "<<(num_mat*5); 
    system("pause");
    system("cls");
    cout << "Test of arithmetic with strings: \n";
    cout << "string_mat = [1,2,3;1,2,3;1,2,3;]" << endl;
-   cout << "string_mat+[1,2,3;1,2,3;1,2,3;]: \n";(string_mat+"[1,2,3;1,2,3;1,2,3;]").PrintInfo();
-   cout << "string_mat-[1,2,3;1,2,3;1,2,3;]: \n";(string_mat-"[1,2,3;1,2,3;1,2,3;]").PrintInfo();
-   cout << "string_mat*[1,2,3;1,2,3;1,2,3;]: \n";(string_mat*"[1,2,3;1,2,3;1,2,3;]").PrintInfo();
+   cout << "string_mat+[1,2,3;1,2,3;1,2,3;]: \n"<<(string_mat+"[1,2,3;1,2,3;1,2,3;]");
+   cout << "string_mat-[1,2,3;1,2,3;1,2,3;]: \n"<<(string_mat-"[1,2,3;1,2,3;1,2,3;]");
+   cout << "string_mat*[1,2,3;1,2,3;1,2,3;]: \n"<<(string_mat*"[1,2,3;1,2,3;1,2,3;]");
    return 0;
 }
