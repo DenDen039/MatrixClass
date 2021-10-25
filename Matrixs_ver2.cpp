@@ -33,102 +33,69 @@ class DivisionError:public Exception{
 	private:
 		int mat_rows,mat_cols;
 	public:
+		DivisionError(int rows, int cols, string error_type="wrong_dvision_matrix_size"){
+			e_type = error_type;
 		DivisionError(int rows, int cols, string error_type="wrong_dvision_matrix_size"):Exception(error_type){
 			mat_rows = rows;
 			mat_cols = cols;
 		}
+		DivisionError(const DivisionError &e){
+			e_type =e.e_type;
 		DivisionError(const DivisionError &e):Exception(e){
 			mat_rows =e.mat_rows;
 			mat_cols =e.mat_cols;
 		}
-		DivisionError& operator = (const DivisionError &e){
-			e_type =e.e_type;
-			mat_rows =e.mat_rows;
-			mat_cols =e.mat_cols;
-			return *this;
-		}
-		int get_rows(){
-			return mat_rows;
-		}
-		int get_cols(){
-			return mat_cols;
-		}
+@@ -58,11 +56,9 @@ class DivisionError:public Exception{
 };
 class DivisionByZero:public Exception{
 	public:
+		DivisionByZero(string error_type="division_by_zero"){
+			e_type = error_type;
 		DivisionByZero(string error_type="division_by_zero"):Exception(error_type){
 		}
+		DivisionByZero(const DivisionByZero &e){
+			e_type =e.e_type;
 		DivisionByZero(const DivisionByZero &e):Exception(e){
 		}
 		DivisionByZero & operator = (const DivisionByZero &e){
 			e_type =e.e_type;
-			return *this;
-		}
-};
-class SizeError:public Exception{
+@@ -73,14 +69,13 @@ class SizeError:public Exception{
 	private:
 		int rows1,rows2,cols1,cols2;
 	public:
+		SizeError(int rows1,int cols1,int rows2,int cols2,string error_type="size_error"){
+			e_type = error_type;
 		SizeError(int rows1,int cols1,int rows2,int cols2,string error_type="size_error"):Exception(error_type){
 			this->cols1 = cols1;
 			this->cols2 = cols2;
 			this->rows1 = rows1;
 			this->rows2 = rows2;
 		}
+		SizeError(const SizeError &e){
 		SizeError(const SizeError &e):Exception(e){
 			e_type =e.e_type;
 			rows1 =e.rows1;
 			rows2 =e.rows2;
-			cols1 =e.cols1;
-			cols2 =e.cols2;
-		}
-		SizeError& operator = (const SizeError &e){
-			e_type =e.e_type;
-			rows1 =e.rows1;
-			rows2 =e.rows2;
-			cols1 =e.cols1;
-			cols2 =e.cols2;
-			return *this;
-		}
-		string get_size_info(){
-			string s = "";
-			s += "First matrix is " + to_string(rows1)+"x" + to_string(cols1) + "\n";
-			s+= "Second matrix is " + to_string(rows2)+"x" + to_string(cols2) + "\n";
-			return s;
-		}
-		
-};
-class MultiplicationSizeError:public Exception{
+@@ -107,12 +102,12 @@ class MultiplicationSizeError:public Exception{
 	private:
 		int rows2,cols1;
 	public:
+		MultiplicationSizeError(int cols1,int rows2, string error_type="multiplication_size_error"){
 		MultiplicationSizeError(int cols1,int rows2, string error_type="multiplication_size_error"):Exception(error_type){
 			e_type = error_type;
 			this->cols1 = cols1;
 			this->rows2 = rows2;
 		}
+		MultiplicationSizeError(const MultiplicationSizeError &e){
 		MultiplicationSizeError(const MultiplicationSizeError &e):Exception(e){
 			e_type =e.e_type;
 			rows2 =e.rows2;
 			cols1 =e.cols1;
-		}
-		MultiplicationSizeError& operator = (const MultiplicationSizeError &e){
-			e_type = e.e_type;
-			rows2 =e.rows2;
-			cols1 =e.cols1;
-			return *this;
-		}
-		string get_size_info(){
-			string s = "";
-			s += "First matrix has " +to_string(cols1) +" columns\n";
-			s +="Second matrix has " + to_string(rows2) +" rows\n";
-			return s;
-		}
-};
-class IndexError:public Exception{
+@@ -134,14 +129,14 @@ class IndexError:public Exception{
 	private:
 		int row,col,mrows,mcols;
 	public:
+		IndexError(int row, int col,int mrows,int mcols,string error_type="index_error"){
 		IndexError(int row, int col,int mrows,int mcols,string error_type="index_error"):Exception(error_type){
 			e_type = error_type;
 			this->row = row;
@@ -136,50 +103,22 @@ class IndexError:public Exception{
 			this->mrows = mrows;
 			this->mcols = mcols;
 		}
+		IndexError(const IndexError &e){
 		IndexError(const IndexError &e):Exception(e){
 			e_type =e.e_type;
 			row = e.row;
 			col = e.col;
-			mrows = e.mrows;
-			mcols = e.mcols;
-		}
-		IndexError& operator = (const IndexError &e){
-			e_type =e.e_type;
-			row = e.row;
-			col = e.col;
-			mrows = e.mrows;
-			mcols = e.mcols;
-			return *this;
-		}
-		string get_out_of_bounce_info(){
-			string s = "";
-			if(row > mrows || row <0){
-				s+= "Your row index must be in range(0,"+to_string(mrows-1)+"). ";
-				s+="Your current row index: " + to_string(row)+"\n";
-			}
-			if(col > mcols || col <0){
-				s+= "Your column index must be in range(0,"+to_string(col-1)+"). ";
-				s+="Your current column index: " + to_string(col)+"\n";
-			}
-			return s;
-		}
-		int get_col(){
-			return col;
-		}
-		int get_row(){
-			return row;
-		}
-};
-class StringConvertError:public Exception{
-	private:	
+@@ -180,12 +175,12 @@ class StringConvertError:public Exception{
 		string reason;
 		int index_error;
 	public:
+		StringConvertError (int index_error,string reason = "uknown error", string error_type="string_convert_error"){
 		StringConvertError (int index_error,string reason = "uknown error", string error_type="string_convert_error"):Exception(error_type){
 			this->reason = reason;
 			this->index_error = index_error;
 			e_type = error_type;
 		}
+		StringConvertError(const StringConvertError &e){
 		StringConvertError(const StringConvertError &e):Exception(e){
 			e_type =e.e_type;
 			reason = e.reason;
@@ -196,7 +135,6 @@ class StringConvertError:public Exception{
 			return reason;
 		}
 };
-
 class Matrix{
     private:
         int ** matrix,rows,cols;
@@ -261,6 +199,7 @@ class Matrix{
             info = copy.info;
         }
       	Matrix (string s){
+      		try{
       			if(s[0] != '[')
       				throw StringConvertError(0,"Wrong string set up");
       			if(s[s.size()-2] != ';')
@@ -312,7 +251,19 @@ class Matrix{
 					this->matrix[i][col] = num;
 					string_index++;
 				}
-				MakeString();  	
+				MakeString();
+			}
+			catch(StringConvertError &e){
+				cout << e.get_error_type() << endl;
+				cout << e.get_reason() << endl;
+				if(e.get_index_error() != -1)
+					cout << "Index error: " << e.get_index_error() << endl;
+				this->matrix  = NULL;
+            	this->rows = 0;
+           		this->cols = 0;
+           		MakeString();
+           		return;
+			}      	
 		}
         Matrix & operator = (Matrix const &move){
             if (this != &move) {
@@ -501,7 +452,6 @@ class Matrix{
         		return Matrix();
 			}
 		}
-
         bool operator == (const Matrix& m){
             return this->matrix_sum() == m.matrix_sum();
         }
@@ -654,7 +604,6 @@ int main(){
     system("pause");
     system("cls");
    //End of the test
-
    //Op assigment test
    Matrix temp(RandomFill(Matrix::CreateMatrix(2,2),2,2),2,2),dest;
    cout << "Operator assigment test: \n";
@@ -666,7 +615,6 @@ int main(){
    system("pause");
    system("cls");
    //End of the test
-
    //Test of arithmetic
    cout <<"Test of arithmetic: \n";
    cout << "Matrix mat1: \n";
