@@ -216,22 +216,11 @@ class Matrix{
         }
     public:
         explicit Matrix(int **matrix = NULL, int rows = 0, int cols = 0){
-        	try{
-        		if(rows < 0)
-        			throw Exception("Variable out of range");
-        		this->rows = rows;
-			}catch(Exception &e){
-				cout << e.get_error_type() << endl;
-        		this->rows = 0;
-			}
-			try{
-        		if(cols < 0)
-        			throw Exception("Variable out of range");
-        		this->cols = cols;
-			}catch(Exception &e){
-				cout << e.get_error_type() << endl;
-        		this->cols = 0;
-			}
+        	if(rows < 0)	
+        		throw Exception("Variable out of range");
+        	this->rows = rows;
+        	if(cols < 0)
+        		throw Exception("Variable out of range");
             this->matrix  = matrix;
             MakeString();
         } 
@@ -261,11 +250,10 @@ class Matrix{
             info = copy.info;
         }
       	Matrix (string s){
-      		try{
       			if(s[0] != '[')
       				throw StringConvertError(0,"Wrong string set up");
       			if(s[s.size()-2] != ';')
-				  	throw StringConvertError(s.size()-2,"Wrong string set up"); 
+				  	throw StringConvertError(s.size()-2,"Wrong string set up");
 				if(s[s.size()-1] != ']')
 					throw StringConvertError(s.size()-1,"Wrong string set up"); 
         		int *current_cols = new int[s.size()],current_rows = 0;
@@ -273,16 +261,20 @@ class Matrix{
        					current_cols[i]=1;
 				}
         		for(int i = 1; i < s.size()-1;i++){
-        			if(!isdigit(s[i]) && s[i] != ','&& s[i] != ';'&& s[i] != '-')
+        			if(!isdigit(s[i]) && s[i] != ','&& s[i] != ';'&& s[i] != '-'){
+        				delete current_cols;
         				throw StringConvertError(i,"Unexpected symbol");
+					}
+        				
        				if(s[i] == ',')
        					current_cols[current_rows]++;
        				else if(s[i] == ';')
        					current_rows++;
 				}
 				for(int i =1; i < current_rows;i++){
-					if(current_cols[0] != current_cols[i])
-						throw StringConvertError(-1,"Not the same amount of elements in the columns");
+					if(current_cols[0] != current_cols[i]){
+        				delete current_cols;
+						throw StringConvertError(-1,"Not the same amount of elements in the columns");}
 				}
 				this->rows = current_rows;
 				this->cols = current_cols[0];
@@ -313,19 +305,7 @@ class Matrix{
 					this->matrix[i][col] = num;
 					string_index++;
 				}
-				MakeString();
-			}
-			catch(StringConvertError &e){
-				cout << e.get_error_type() << endl;
-				cout << e.get_reason() << endl;
-				if(e.get_index_error() != -1)
-					cout << "Index error: " << e.get_index_error() << endl;
-				this->matrix  = NULL;
-            	this->rows = 0;
-           		this->cols = 0;
-           		MakeString();
-           		return;
-			}      	
+				MakeString(); 	
 		}
         Matrix & operator = (Matrix const &move){
             if (this != &move) {
@@ -633,9 +613,23 @@ int main(){
 	(Matrix("[1,2;1,2;]")*Matrix("[1,2;1,2;1,2;]"));
 	system("pause");
 	system("cls");
-	Matrix string_mat_e("[1,2,3 ;1,2,3;1,2,3;]");
-    cout << string_mat_e;
+	try{
+		Matrix string_mat_e("[1,2,3 ;1,2,3;1,2,3;]");
+	}catch(StringConvertError &e){
+		cout << e.get_error_type() << endl;
+		cout << e.get_reason() << endl;
+		if(e.get_index_error() != -1)
+			cout << "Index error: " << e.get_index_error() << endl;
+	} 
 	system("pause");
+	system("cls");
+	try{
+		Matrix uselessmat(NULL,-1,-1);
+	}
+	catch(Exception &e){
+		cout << e.get_error_type() << endl;
+    }
+    system("pause");
 	system("cls");
     temp_mat.set_new_matrix("[1,2,3;1,2,3;1,2,3;]");
     cout << temp_mat;
